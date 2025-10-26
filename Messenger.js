@@ -31,16 +31,15 @@ export default function Messenger() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="light-content" backgroundColor="#0078FF" />
+      <StatusBar barStyle="light-content" backgroundColor="#C026D3" />
 
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"} // ✅ keeps input above keyboard
-        keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0} // adjust offset for iOS
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* 🔵 HEADER */}
+        {/* HEADER */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+          <TouchableOpacity onPress={() => navigation.navigate("Home")} style={styles.backBtn}>
             <Ionicons name="arrow-back" size={26} color="white" />
           </TouchableOpacity>
 
@@ -54,30 +53,31 @@ export default function Messenger() {
           </View>
         </View>
 
-        {/* ⚪ MESSAGES */}
+        {/* MESSAGES */}
         <ScrollView
           style={styles.messagesArea}
           ref={scrollViewRef}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
         >
           {messages.map((msg) => (
-            <View key={msg.id} style={styles.messageBubble}>
-              <Text style={styles.messageText}>{msg.text}</Text>
+            <View key={msg.id} style={styles.messageRow}>
+              <View style={styles.messageBubble}>
+                <Text style={styles.messageText}>{msg.text}</Text>
+              </View>
+              <Image source={require("./assets/rogelyn.jpg")} style={styles.userPic} />
             </View>
           ))}
         </ScrollView>
 
-        {/* 💬 INPUT AREA (STAYS ABOVE KEYBOARD) */}
+        {/* INPUT */}
         <View style={styles.inputArea}>
           <TextInput
             style={styles.input}
             placeholder="Type a message..."
-            placeholderTextColor="#888"
+            placeholderTextColor="#999"
             value={input}
             onChangeText={setInput}
             onSubmitEditing={sendMessage}
-            returnKeyType="send"
           />
           <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
             <Ionicons name="send" size={20} color="white" />
@@ -89,76 +89,60 @@ export default function Messenger() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#0078FF",
-  },
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
+  safeArea: { flex: 1, backgroundColor: "#C026D3" }, // purple-pink top
+  container: { flex: 1, backgroundColor: "#FFF" },
 
-  // 🔵 HEADER
   header: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#0078FF",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 8,
+    backgroundColor: "#C026D3", // purple-pink header
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 5 : 8,
     paddingBottom: 10,
     paddingHorizontal: 12,
   },
-  profilePic: {
-    width: 35,
-    height: 35,
-    borderRadius: 50,
-    marginLeft: 10,
-  },
-  name: {
-    color: "white",
-    fontSize: 17,
-    fontWeight: "600",
-    marginLeft: 10,
-    flex: 1,
-  },
+  backBtn: { marginRight: 4 },
+  profilePic: { width: 35, height: 35, borderRadius: 50, marginLeft: 10 },
+  name: { color: "white", fontSize: 17, fontWeight: "600", marginLeft: 10, flex: 1 },
   headerIcons: { flexDirection: "row", alignItems: "center" },
   icon: { marginRight: 15 },
 
-  // ⚪ MESSAGES
-  messagesArea: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
+  messagesArea: { flex: 1, backgroundColor: "#FFF", paddingHorizontal: 10 },
+  messageRow: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
+    marginBottom: 8,
   },
   messageBubble: {
-    alignSelf: "flex-end",
-    backgroundColor: "#0078FF",
-    borderRadius: 15,
-    padding: 10,
-    marginVertical: 5,
-    maxWidth: "80%",
+    backgroundColor: "#EC4899", // hot pink bubble
+    borderRadius: 18,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    maxWidth: "75%",
+    marginRight: 5,
   },
-  messageText: { color: "#fff", fontSize: 15 },
+  messageText: { color: "#FFF", fontSize: 15 },
+  userPic: { width: 30, height: 30, borderRadius: 50 },
 
-  // 💬 INPUT
   inputArea: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F1F1F1",
+    backgroundColor: "#FDF2F8", // soft pink
     paddingHorizontal: 10,
     paddingVertical: Platform.OS === "ios" ? 10 : 6,
   },
   input: {
     flex: 1,
     backgroundColor: "white",
-    borderRadius: 20,
+    borderRadius: 25,
     paddingHorizontal: 15,
     height: 42,
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: "#F9A8D4", // light pink border
   },
   sendButton: {
-    backgroundColor: "#0078FF",
-    borderRadius: 20,
+    backgroundColor: "#C026D3",
+    borderRadius: 25,
     padding: 10,
     marginLeft: 8,
   },

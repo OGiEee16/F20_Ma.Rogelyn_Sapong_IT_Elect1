@@ -4,8 +4,8 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>💬 Welcome to Messenger Hub</Text>
-      <Text style={styles.subtitle}>Choose what you'd like to open:</Text>
+      <Text style={styles.title}>💬 Welcome to ChatConnect</Text>
+      <Text style={styles.subtitle}>Choose your destination:</Text>
 
       <TouchableOpacity
         style={styles.buttonPrimary}
@@ -29,47 +29,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#FDF2F8",
     padding: 24,
-    backgroundColor: "#EEF2FF",
   },
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: "#1E3A8A",
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: "#475569",
-    marginBottom: 30,
-  },
+  title: { fontSize: 26, fontWeight: "bold", color: "#C026D3", marginBottom: 8 },
+  subtitle: { fontSize: 16, color: "#6B7280", marginBottom: 30 },
   buttonPrimary: {
     width: "80%",
-    backgroundColor: "#6366F1",
+    backgroundColor: "#C026D3",
     paddingVertical: 14,
     borderRadius: 25,
     marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 5,
+    elevation: 6,
   },
   buttonSecondary: {
     width: "80%",
-    backgroundColor: "#10B981",
+    backgroundColor: "#EC4899",
     paddingVertical: 14,
     borderRadius: 25,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 5,
+    elevation: 6,
   },
-  buttonText: {
-    color: "#FFF",
-    textAlign: "center",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  buttonText: { color: "#FFF", textAlign: "center", fontWeight: "bold", fontSize: 16 },
 });

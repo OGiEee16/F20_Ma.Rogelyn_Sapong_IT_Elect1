@@ -25,33 +25,26 @@ export default function Comment() {
   const translateY = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
 
-  // Keyboard handling
   useEffect(() => {
-    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
-
-    const subShow = Keyboard.addListener(showEvent, (e) => {
+    const show = Keyboard.addListener("keyboardDidShow", (e) =>
       Animated.timing(translateY, {
         toValue: -e.endCoordinates.height,
         duration: 200,
         useNativeDriver: true,
-      }).start();
-      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 150);
-    });
-
-    const subHide = Keyboard.addListener(hideEvent, () => {
+      }).start()
+    );
+    const hide = Keyboard.addListener("keyboardDidHide", () =>
       Animated.timing(translateY, {
         toValue: 0,
         duration: 200,
         useNativeDriver: true,
-      }).start();
-    });
-
+      }).start()
+    );
     return () => {
-      subShow.remove();
-      subHide.remove();
+      show.remove();
+      hide.remove();
     };
-  }, [translateY]);
+  }, []);
 
   const sendComment = () => {
     if (!input.trim()) return;
@@ -66,7 +59,7 @@ export default function Comment() {
   };
 
   const deleteComment = (id) => {
-    Alert.alert("Delete Comment", "Are you sure you want to delete this comment?", [
+    Alert.alert("Delete Comment", "Are you sure?", [
       { text: "Cancel", style: "cancel" },
       {
         text: "Delete",
@@ -78,63 +71,68 @@ export default function Comment() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#2563EB" barStyle="light-content" />
+      <StatusBar backgroundColor="#C2185B" barStyle="light-content" />
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.inner}>
-          {/* Header */}
+          {/* HEADER */}
           <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => navigation.goBack()}
-              style={styles.backBtn}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
               <Ionicons name="arrow-back" size={26} color="#fff" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Comments</Text>
+            <Text style={styles.headerTitle}>Comment Section</Text>
           </View>
 
-          {/* Comments */}
+          {/* PROFILE + IMAGE */}
+          <View style={styles.postContainer}>
+            <View style={styles.postHeader}>
+              <Image source={require("./assets/rogelyn.jpg")} style={styles.avatar} />
+              <View>
+                <Text style={styles.postName}>Ma. Rogelyn Sapong</Text>
+                <Text style={styles.postTime}>2h ago</Text>
+              </View>
+            </View>
+            <Image source={require("./assets/family.jpeg")} style={styles.postImage} />
+          </View>
+
+          {/* COMMENTS LIST */}
+          <Text style={styles.commentTitle}>Comments</Text>
           <FlatList
             ref={flatListRef}
             data={comments}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <View style={styles.commentRow}>
-                <Image source={item.profile} style={styles.profilePic} />
+                <Image source={item.profile} style={styles.commentAvatar} />
                 <View style={styles.commentBox}>
-                  <View style={styles.commentContent}>
-                    <Text style={styles.commentText}>{item.text}</Text>
+                  <Text style={styles.commentName}>Ma. Rogelyn Sapong</Text>
+                  <Text style={styles.commentText}>{item.text}</Text>
+                  <View style={styles.commentActions}>
+                    <Text style={styles.time}>Just now</Text>
+                    <Text style={styles.like}>1 Like</Text>
+                    <Text style={styles.reply}>Reply</Text>
                     <TouchableOpacity onPress={() => deleteComment(item.id)}>
-                      <Ionicons name="trash-outline" size={16} color="#888" />
+                      <Ionicons name="trash" size={16} color="#C2185B" />
                     </TouchableOpacity>
                   </View>
                 </View>
               </View>
             )}
             contentContainerStyle={styles.commentsList}
-            keyboardShouldPersistTaps="handled"
           />
 
-          {/* Input */}
+          {/* INPUT */}
           <Animated.View style={[styles.inputWrapper, { transform: [{ translateY }] }]}>
             <View style={styles.inputContainer}>
-              <TouchableOpacity>
-                <Ionicons name="happy-outline" size={22} color="#2563EB" />
-              </TouchableOpacity>
-
+              <Image source={require("./assets/rogelyn.jpg")} style={styles.commentAvatar} />
               <TextInput
                 style={styles.input}
                 placeholder="Write a comment..."
                 placeholderTextColor="#999"
                 value={input}
                 onChangeText={setInput}
-                returnKeyType="send"
                 onSubmitEditing={sendComment}
               />
-
-              <TouchableOpacity style={styles.sendButton} onPress={sendComment}>
-                <Ionicons name="send" size={18} color="#fff" />
-              </TouchableOpacity>
+              <Ionicons name="happy-outline" size={22} color="#9C27B0" />
             </View>
           </Animated.View>
         </View>
@@ -149,80 +147,51 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2563EB",
-    paddingVertical: 14,
+    backgroundColor: "#9C27B0",
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 8 : 12,
+    paddingBottom: 10,
     paddingHorizontal: 12,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 10 : 12, // ✅ fixes the top issue
   },
-  backBtn: {
-    padding: 8,
-    marginRight: 8,
-    borderRadius: 20,
-  },
-  headerTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  commentsList: {
-    padding: 10,
-    paddingBottom: 80,
-  },
-  commentRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  profilePic: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    marginRight: 8,
-  },
+  backBtn: { marginRight: 8 },
+  headerTitle: { color: "#fff", fontSize: 18, fontWeight: "bold" },
+  postContainer: { backgroundColor: "#fff", padding: 10 },
+  postHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  avatar: { width: 40, height: 40, borderRadius: 20, marginRight: 10 },
+  postName: { fontWeight: "bold", fontSize: 16 },
+  postTime: { color: "#666", fontSize: 12 },
+  postImage: { width: "100%", height: 300, borderRadius: 10, marginTop: 5 },
+  commentTitle: { marginLeft: 10, fontWeight: "bold", fontSize: 16, marginTop: 8 },
+  commentsList: { paddingHorizontal: 10, paddingBottom: 80 },
+  commentRow: { flexDirection: "row", marginVertical: 8 },
+  commentAvatar: { width: 34, height: 34, borderRadius: 17, marginRight: 8 },
   commentBox: {
-    backgroundColor: "#F0F2F5",
-    borderRadius: 18,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    backgroundColor: "#F3E5F5",
+    borderRadius: 15,
+    padding: 10,
     flex: 1,
   },
-  commentContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  commentText: {
-    fontSize: 15,
-    color: "#111",
-    flexShrink: 1,
-  },
-  inputWrapper: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
+  commentName: { fontWeight: "bold", marginBottom: 2 },
+  commentText: { color: "#111" },
+  commentActions: { flexDirection: "row", alignItems: "center", marginTop: 4, gap: 10 },
+  time: { color: "#888", fontSize: 12 },
+  like: { fontWeight: "bold", fontSize: 12, color: "#AD1457" },
+  reply: { color: "#9C27B0", fontWeight: "bold", fontSize: 12 },
+  inputWrapper: { position: "absolute", bottom: 0, left: 0, right: 0 },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
+    backgroundColor: "#fff",
     borderTopWidth: 1,
     borderColor: "#ddd",
-    backgroundColor: "#fff",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    padding: 8,
   },
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: Platform.OS === "ios" ? 8 : 5,
-    marginHorizontal: 8,
-  },
-  sendButton: {
-    backgroundColor: "#2563EB",
-    padding: 8,
-    borderRadius: 25,
+    borderColor: "#E1BEE7",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === "ios" ? 8 : 6,
+    marginRight: 8,
   },
 });
