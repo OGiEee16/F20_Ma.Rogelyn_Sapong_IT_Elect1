@@ -1,15 +1,27 @@
 // screens/DashboardScreen.js
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
+  ScrollView,
+} from "react-native";
+import ProfileScreen from "./ProfileScreen";
+import ChatScreen from "./ChatScreen";
+import KomentoScreen from "./Komento";
 
 const Dashboard = ({ navigation, route = {} }) => {
   const currentUser = route?.params?.currentUser || null;
+  const [activeOption, setActiveOption] = useState("Profile");
+  const [collapsed, setCollapsed] = useState(false);
 
-  // If no user data, redirect to login
   if (!currentUser) {
     return (
-      <View style={styles.container}>
-        <Text style={{ color: "#666", marginBottom: 20 }}>
+      <SafeAreaView style={styles.center}>
+        <Text style={styles.sessionText}>
           Session expired. Please login again.
         </Text>
         <TouchableOpacity
@@ -18,84 +30,206 @@ const Dashboard = ({ navigation, route = {} }) => {
         >
           <Text style={styles.logoutText}>Go to Login</Text>
         </TouchableOpacity>
-      </View>
+      </SafeAreaView>
     );
   }
 
+  const menuOptions = [
+    { name: "Profile", icon: "👤" },
+    { name: "Messenger", icon: "💬" },
+    { name: "Comment", icon: "💭" },
+  ];
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcome}>Welcome, {currentUser.username}!</Text>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={() => navigation.replace("Login")}
-      >
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-
-      <View style={styles.optionsContainer}>
+      {/* Sidebar */}
+      <View style={[styles.sidebar, collapsed && styles.sidebarCollapsed]}>
+        {/* Collapse Button */}
         <TouchableOpacity
-          style={styles.optionButton}
-          onPress={() => navigation.navigate("ProfileScreen", { currentUser })}
+          style={styles.collapseButton}
+          onPress={() => setCollapsed(!collapsed)}
         >
-          <Text style={styles.optionText}>👤 Profile</Text>
+          <Text style={styles.collapseIcon}>{collapsed ? "➡️" : "⬅️"}</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.optionButton}
-          onPress={() => navigation.navigate("ChatScreen", { currentUser })}
-        >
-          <Text style={styles.optionText}>💬 Messenger</Text>
-        </TouchableOpacity>
+        {/* Profile */}
+        {!collapsed && (
+          <View style={styles.profileContainer}>
+            <View style={styles.avatar}>
+              <Text style={styles.avatarText}>
+                {currentUser.username.charAt(0).toUpperCase()}
+              </Text>
+            </View>
+            <Text style={styles.username}>{currentUser.username}</Text>
+          </View>
+        )}
 
+        {/* Menu */}
+        <ScrollView style={styles.menuContainer}>
+          {menuOptions.map((option) => (
+            <TouchableOpacity
+              key={option.name}
+              style={[
+                styles.menuButton,
+                activeOption === option.name && styles.activeMenuButton,
+              ]}
+              onPress={() => setActiveOption(option.name)}
+            >
+              <Text style={styles.menuIcon}>{option.icon}</Text>
+              {!collapsed && (
+                <Text
+                  style={[
+                    styles.menuText,
+                    activeOption === option.name && styles.activeMenuText,
+                  ]}
+                >
+                  {option.name}
+                </Text>
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+
+        {/* Logout */}
         <TouchableOpacity
-          style={styles.optionButton}
-          onPress={() => navigation.navigate("Komento", { currentUser })}
+          style={styles.logoutButton}
+          onPress={() => navigation.replace("Login")}
         >
-          <Text style={styles.optionText}>💭 Comment</Text>
+          <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </View>
-    </View>
+
+      {/* Main Content */}
+      <View style={styles.content}>
+        {activeOption === "Profile" && (
+          <ProfileScreen route={{ params: { currentUser } }} />
+        )}
+        {activeOption === "Messenger" && (
+          <ChatScreen route={{ params: { currentUser } }} />
+        )}
+        {activeOption === "Comment" && (
+          <KomentoScreen route={{ params: { currentUser } }} />
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fce4ec",
+    flexDirection: "row",
+    backgroundColor: "#f9f9f9",
   },
-  welcome: {
-    fontSize: 22,
-    fontWeight: "bold",
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f9f9f9",
+    padding: 20,
+  },
+  sessionText: {
+    fontSize: 18,
+    color: "#666",
+    textAlign: "center",
     marginBottom: 20,
-    color: "#880e4f",
+  },
+  sidebar: {
+    width: 220,
+    backgroundColor: "#fff",
+    borderRightWidth: 1,
+    borderRightColor: "#eee",
+    paddingVertical: 20,
+    justifyContent: "space-between",
+    position: "relative",
+  },
+  sidebarCollapsed: {
+    width: 70,
+    paddingVertical: 20,
+  },
+  collapseButton: {
+    position: "absolute",
+    top: 10,
+    right: -15,
+    backgroundColor: "#111",
+    padding: 6,
+    borderRadius: 20,
+    zIndex: 10,
+  },
+  collapseIcon: {
+    fontSize: 18,
+    color: "#fff",
+  },
+  profileContainer: {
+    alignItems: "center",
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  avatar: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: "#111",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  avatarText: {
+    fontSize: 28,
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  username: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#111",
+  },
+  menuContainer: {
+    flex: 1,
+    marginTop: 20,
+  },
+  menuButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+  activeMenuButton: {
+    backgroundColor: "#111",
+  },
+  menuIcon: {
+    fontSize: 22,
+    marginRight: 12,
+  },
+  menuText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#111",
+  },
+  activeMenuText: {
+    color: "#fff",
   },
   logoutButton: {
-    backgroundColor: "#f48fb1",
+    backgroundColor: "#111",
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
-    marginBottom: 40,
-  },
-  logoutText: { color: "#fff", fontWeight: "bold" },
-  optionsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    width: "90%",
-  },
-  optionButton: {
-    backgroundColor: "#ce93d8",
-    paddingHorizontal: 20,
-    paddingVertical: 15,
     borderRadius: 25,
-    margin: 8,
-    minWidth: 120,
     alignItems: "center",
+    marginBottom: 20,
   },
-  optionText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+  },
 });
 
 export default Dashboard;

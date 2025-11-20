@@ -23,7 +23,6 @@ const ChatScreen = ({ navigation, route }) => {
   const [text, setText] = useState("");
   const flatListRef = useRef(null);
 
-  // Load other users
   useEffect(() => {
     if (!currentUser) return;
 
@@ -41,7 +40,6 @@ const ChatScreen = ({ navigation, route }) => {
     loadUsers();
   }, [currentUser]);
 
-  // Load messages
   const loadMessages = async (otherUser) => {
     try {
       const msgs = await db.getAllAsync(
@@ -52,18 +50,14 @@ const ChatScreen = ({ navigation, route }) => {
         [currentUser.id, otherUser.id, otherUser.id, currentUser.id]
       );
       setMessages(msgs);
-      // scroll to bottom
       setTimeout(() => {
-        if (flatListRef.current && msgs.length > 0) {
-          flatListRef.current.scrollToEnd({ animated: true });
-        }
+        flatListRef.current?.scrollToEnd({ animated: true });
       }, 100);
     } catch (err) {
       console.log("Error loading messages:", err);
     }
   };
 
-  // Auto-refresh messages every 2 sec
   useEffect(() => {
     if (!selectedUser) return;
     const interval = setInterval(() => loadMessages(selectedUser), 2000);
@@ -114,12 +108,12 @@ const ChatScreen = ({ navigation, route }) => {
       return (
         <Image
           source={{ uri: user.profile_picture }}
-          style={{ width: size, height: size, borderRadius: size / 2, marginRight: 10, borderWidth: 2, borderColor: "#ce93d8" }}
+          style={{ width: size, height: size, borderRadius: size / 2, marginRight: 10 }}
         />
       );
     }
     return (
-      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: "#ce93d8", justifyContent: "center", alignItems: "center", marginRight: 10 }}>
+      <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: "#000", justifyContent: "center", alignItems: "center", marginRight: 10 }}>
         <Text style={{ color: "#fff", fontWeight: "bold", fontSize: size / 2.5 }}>
           {user?.username?.charAt(0).toUpperCase() || "?"}
         </Text>
@@ -129,7 +123,7 @@ const ChatScreen = ({ navigation, route }) => {
 
   if (!currentUser) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <View style={styles.center}>
         <Text>User data missing. Go back and try again.</Text>
       </View>
     );
@@ -142,35 +136,26 @@ const ChatScreen = ({ navigation, route }) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 100}
     >
       {/* Header */}
-      <View style={{ backgroundColor: "#ce93d8", padding: 15, paddingTop: 50 }}>
+      <View style={styles.header}>
         <TouchableOpacity onPress={() => selectedUser ? backToUserList() : navigation.goBack()}>
-          <Text style={{ color: "#fff", fontSize: 14, marginBottom: 5 }}>
-            {selectedUser ? "← Back to Chats" : "← Back to Dashboard"}
-          </Text>
+          <Text style={styles.backText}>{selectedUser ? "← Back to Chats" : "← Back to Dashboard"}</Text>
         </TouchableOpacity>
-        <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 20 }}>
-          {selectedUser ? selectedUser.username : "Messenger"}
-        </Text>
+        <Text style={styles.headerTitle}>{selectedUser ? selectedUser.username : "Messenger"}</Text>
       </View>
 
       {!selectedUser ? (
-        // User list
         <FlatList
           data={users}
           keyExtractor={(item) => item.id.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity style={{ flexDirection: "row", alignItems: "center", padding: 15, borderBottomWidth: 1, borderBottomColor: "#eee" }} onPress={() => selectUser(item)}>
+            <TouchableOpacity style={styles.userItem} onPress={() => selectUser(item)}>
               {renderProfilePic(item, 60)}
-              <View>
-                <Text style={{ fontWeight: "bold", fontSize: 16 }}>{item.username}</Text>
-                <Text style={{ fontSize: 13, color: "#999" }}>Tap to chat</Text>
-              </View>
+              <Text style={styles.username}>{item.username}</Text>
             </TouchableOpacity>
           )}
           ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 20 }}>No other users yet.</Text>}
         />
       ) : (
-        // Chat window
         <>
           <FlatList
             ref={flatListRef}
@@ -180,18 +165,12 @@ const ChatScreen = ({ navigation, route }) => {
               const isMine = item.sender_id === currentUser.id;
               return (
                 <View style={{ flexDirection: "row", justifyContent: isMine ? "flex-end" : "flex-start", marginVertical: 5, paddingHorizontal: 10 }}>
-                  {!isMine && renderProfilePic(selectedUser, 50)}
-                  <View style={{
-                    backgroundColor: isMine ? "#f8bbd0" : "#fce4ec",
-                    padding: 10,
-                    borderRadius: 15,
-                    maxWidth: "70%"
-                  }}>
-                    <Text style={{ fontWeight: "bold", color: "#880e4f" }}>{isMine ? "You" : selectedUser.username}</Text>
-                    <Text style={{ color: "#333", marginVertical: 2 }}>{item.message}</Text>
-                    <Text style={{ fontSize: 10, color: "#666", textAlign: "right" }}>{new Date(item.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                  {!isMine && renderProfilePic(selectedUser, 40)}
+                  <View style={[styles.messageBubble, { backgroundColor: isMine ? "#000" : "#eee" }]}>
+                    <Text style={{ color: isMine ? "#fff" : "#000", fontWeight: "bold" }}>{isMine ? "You" : selectedUser.username}</Text>
+                    <Text style={{ color: isMine ? "#fff" : "#000" }}>{item.message}</Text>
                   </View>
-                  {isMine && renderProfilePic(currentUser, 50)}
+                  {isMine && renderProfilePic(currentUser, 40)}
                 </View>
               );
             }}
@@ -199,21 +178,17 @@ const ChatScreen = ({ navigation, route }) => {
             onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
           />
 
-          {/* Input */}
-          <View style={{ flexDirection: "row", padding: 10, borderTopWidth: 1, borderColor: "#ddd", alignItems: "center", backgroundColor: "#fff" }}>
+          <View style={styles.inputContainer}>
             <TextInput
-              style={{ flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 25, paddingHorizontal: 15, paddingVertical: 10, marginRight: 10, backgroundColor: "#f9f9f9" }}
+              style={styles.input}
               placeholder="Type a message..."
+              placeholderTextColor="#999"
               value={text}
               onChangeText={setText}
               multiline
               maxLength={500}
             />
-            <TouchableOpacity
-              style={{ backgroundColor: text.trim() ? "#ce93d8" : "#ddd", paddingHorizontal: 20, paddingVertical: 12, borderRadius: 25 }}
-              onPress={sendMessage}
-              disabled={!text.trim()}
-            >
+            <TouchableOpacity style={[styles.sendButton, { backgroundColor: text.trim() ? "#000" : "#ccc" }]} onPress={sendMessage} disabled={!text.trim()}>
               <Text style={{ color: "#fff", fontWeight: "bold" }}>Send</Text>
             </TouchableOpacity>
           </View>
@@ -222,5 +197,18 @@ const ChatScreen = ({ navigation, route }) => {
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  header: { backgroundColor: "#fff", padding: 15, borderBottomWidth: 1, borderBottomColor: "#ddd" },
+  backText: { color: "#000", marginBottom: 5 },
+  headerTitle: { color: "#000", fontSize: 20, fontWeight: "bold" },
+  userItem: { flexDirection: "row", alignItems: "center", padding: 15, borderBottomWidth: 1, borderBottomColor: "#eee" },
+  username: { fontWeight: "bold", fontSize: 16 },
+  messageBubble: { borderRadius: 15, padding: 10, maxWidth: "70%" },
+  inputContainer: { flexDirection: "row", padding: 10, borderTopWidth: 1, borderColor: "#ddd", alignItems: "center", backgroundColor: "#fff" },
+  input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 25, paddingHorizontal: 15, paddingVertical: 10, marginRight: 10, backgroundColor: "#f9f9f9" },
+  sendButton: { paddingHorizontal: 20, paddingVertical: 12, borderRadius: 25, alignItems: "center" },
+  center: { flex: 1, justifyContent: "center", alignItems: "center" },
+});
 
 export default ChatScreen;
